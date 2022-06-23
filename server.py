@@ -30,29 +30,29 @@ class ServerProtocol(DatagramProtocol):
 
     def datagramReceived(self, datagram, address):
         """Handle incoming datagram messages."""
-        if datagram == '0':
-            print 'Registration from %s:%d' % address
-            self.transport.write('ok', address)
+        if datagram == b'0':
+            print('Registration from %s:%d' % address)
+            self.transport.write(b'ok', address)
             self.addresses.append(address)
 
             if len(self.addresses) >= 2:
                 msg_0 = self.addressString(self.addresses[1])
                 msg_1 = self.addressString(self.addresses[0])
 
-                self.transport.write(msg_0, self.addresses[0])
-                self.transport.write(msg_1, self.addresses[1])
+                self.transport.write(msg_0.encode(), self.addresses[0])
+                self.transport.write(msg_1.encode(), self.addresses[1])
 
                 self.addresses.pop(0)
                 self.addresses.pop(0)
 
-                print 'Linked peers'
+                print('Linked peers')
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
-        print "Usage: ./server.py PORT"
+        print("Usage: ./server.py PORT")
         sys.exit(1)
 
     port = int(sys.argv[1])
     reactor.listenUDP(port, ServerProtocol())
-    print 'Listening on *:%d' % (port)
+    print('Listening on *:%d' % (port))
     reactor.run()

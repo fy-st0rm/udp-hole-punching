@@ -22,7 +22,7 @@ class ClientProtocol(DatagramProtocol):
         self.peer_init = False
         self.peer_connect = False
         self.peer_address = None
-        self.transport.write('0', (sys.argv[1], int(sys.argv[2])))
+        self.transport.write(b'0', (sys.argv[1], int(sys.argv[2])))
 
     def toAddress(self, data):
         """Return an IPv4 address tuple."""
@@ -33,28 +33,29 @@ class ClientProtocol(DatagramProtocol):
         """Handle incoming datagram messages."""
         if not self.server_connect:
             self.server_connect = True
-            self.transport.write('ok', (sys.argv[1], int(sys.argv[2])))
-            print 'Connected to server, waiting for peer...'
+            self.transport.write(b'ok', (sys.argv[1], int(sys.argv[2])))
+            print('Connected to server, waiting for peer...')
 
         elif not self.peer_init:
             self.peer_init = True
-            self.peer_address = self.toAddress(datagram)
-            self.transport.write('init', self.peer_address)
-            print 'Sent init to %s:%d' % self.peer_address
+            self.peer_address = self.toAddress(datagram.decode())
+            self.transport.write(b'init', self.peer_address)
+            print('Sent init to %s:%d' % self.peer_address)
 
         elif not self.peer_connect:
             self.peer_connect = True
             host = self.transport.getHost().host
             port = self.transport.getHost().port
             msg = 'Message from %s:%d' % (host, port)
-            self.transport.write(msg, self.peer_address)
+            print("SENDING:", msg)
+            self.transport.write(msg.encode(), self.peer_address)
 
         else:
-            print 'Received:', datagram
+            print('Received:', datagram)
 
 if __name__ == '__main__':
     if len(sys.argv) < 3:
-        print "Usage: ./client RENDEZVOUS_IP RENDEZVOUS_PORT"
+        print("Usage: ./client RENDEZVOUS_IP RENDEZVOUS_PORT")
         sys.exit(1)
 
     protocol = ClientProtocol()
